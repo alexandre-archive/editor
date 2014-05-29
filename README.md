@@ -1,4 +1,4 @@
 editor
 ======
 
-Online editor with Spell Check.
+Web based text editor with Spell Check.
