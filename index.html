@@ -1,0 +1,255 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ABC Online</title>
+
+    <script type="text/javascript" src="js/underscore-min.js"></script>
+    <script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
+
+    <script type="text/javascript" src="js/pdf.js"></script>
+
+    <script type="text/javascript" src="js/jspdf.js"></script>
+    <script type="text/javascript" src="js/libs/Deflate/adler32cs.js"></script>
+    <script type="text/javascript" src="js/libs/FileSaver.js/FileSaver.js"></script>
+    <script type="text/javascript" src="js/libs/Blob.js/BlobBuilder.js"></script>
+
+    <script type="text/javascript" src="js/jspdf.plugin.addimage.js"></script>
+
+    <script type="text/javascript" src="js/jspdf.plugin.standard_fonts_metrics.js"></script>
+    <script type="text/javascript" src="js/jspdf.plugin.split_text_to_size.js"></script>
+    <script type="text/javascript" src="js/jspdf.plugin.from_html.js"></script>
+
+    <script type="text/javascript" src="js/app.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/app.css">
+    <link rel="stylesheet" type="text/css" href="css/font-awesome.min.css">
+
+    <script type="text/javascript">
+
+        $(function() {
+            _.each(getFonts(), function (font) {
+                $('#fonts').append('<option value="' + font.name + '" style="font-family: ' + font.fontfamily + ';">' + font.name + '</option>');
+            });
+
+            $("#fonts").val('Arial');
+
+            _.each(colors, function (color) {
+                $('#foreColors, #backColors').append('<option value="' + color.name + '" style="background-color: ' + color.name + ';">' + color.name + '</option>');
+            });
+
+            $("#foreColors").val('Black');
+            $("#backColors").val('White');
+            $("#fontSize").val('3');
+            $("#textFormat").val('normal');
+        });
+
+        function processText() {
+            var html = JSON.stringify({ text: editorBody.innerHTML, lang: 'pt-BR' });
+
+            $.ajax({
+                async: false,
+                type: "POST",
+                url: "/api/processText",
+                data: html,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(data) {
+                    editorBody.innerHTML = data;
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    alert('Error: ' + errorThrown.message);
+                },
+            });
+        }
+
+        function performClick(node) {
+            var evt = document.createEvent("MouseEvents");
+            evt.initEvent("click", true, false);
+            node.dispatchEvent(evt);
+        }
+
+        function pdfToPlainText(pdfData) {
+            PDFJS.disableWorker = true;
+            var pdf = PDFJS.getDocument(pdfData);
+            pdf.then(getPages);
+        }
+
+        function getPages(pdf) {
+            for (var i = 0; i < pdf.numPages; i++) {
+                pdf.getPage(i + 1).then(getPageText);
+            }
+        }
+
+        function getPageText(page) {
+            page.getTextContent().then(function(textContent) {
+                textContent.items.forEach(function(o) {
+                    editorBody.innerHTML += o.str + '</br>'
+                });
+            });
+        }
+
+        function handleFileSelect(evt) {
+
+            var files = evt.target.files;
+
+            if (!files) return;
+
+            f = files[0];
+
+            if (!f) return;
+
+            if (f.type == 'text/plain' ||
+                f.type == 'text/html' ||
+                f.name.toLowerCase().endsWith('.txt') ||
+                f.name.toLowerCase().endsWith('.html')) {
+
+                var fr = new FileReader();
+
+                fr.onload = function(e) {
+                    editorBody.innerHTML = e.target.result;
+                };
+
+                fr.readAsText(f);
+            } else if (f.name.toLowerCase().endsWith('.pdf')) {
+                var fr = new FileReader();
+
+                fr.onload = function(e) {
+                    pdf = e.target.result;
+                    pdfToPlainText(pdf);
+                };
+
+                fr.readAsArrayBuffer(f);
+            } else {
+                alert('Invalid file type.\nFile: ' + f.name + '\nType: ' + f.type)
+            }
+        }
+
+        $(document).ready(function () {
+            document.getElementById('fileInput').addEventListener('change', handleFileSelect, false);
+
+            var head = document.getElementById("document").contentWindow.document.head;
+
+            var validator = document.createElement("link") 
+            validator.rel = "stylesheet";
+            validator.type = "text/css";
+            validator.href = "css/validator.css";
+
+            head.appendChild(validator);
+
+            var pScript = document.createElement("script") 
+            pScript.type = "text/javascript";
+            pScript.src="js/popup.js";
+
+            head.appendChild(pScript);
+
+            var jqueryScript = document.createElement("script") 
+            jqueryScript.type = "text/javascript";
+            jqueryScript.src="js/jquery-1.11.0.min.js";
+
+            head.appendChild(jqueryScript);
+        });
+    </script>
+
+</head>
+<body onload="initDoc();">
+    <div class="header" id="toolbars">
+        <div>
+            <i class="fa fa-text-width fa-sm"></i>
+            <select id="textFormat" onchange="formatBlock(this[this.selectedIndex].value);">
+                <option value="normal">Normal</option><!-- http://jsfiddle.net/95TVh/2/ -->
+                <option value="h1">Title 1 &lt;h1&gt;</option>
+                <option value="h2">Title 2 &lt;h2&gt;</option>
+                <option value="h3">Title 3 &lt;h3&gt;</option>
+                <option value="h4">Title 4 &lt;h4&gt;</option>
+                <option value="h5">Title 5 &lt;h5&gt;</option>
+                <option value="h6">Subtitle &lt;h6&gt;</option>
+                <option value="p">Paragraph &lt;p&gt;</option>
+                <option value="pre">Preformatted &lt;pre&gt;</option>
+            </select>
+
+            <i class="fa fa-font fa-sm"></i>
+            <select id="fonts" onchange="formatDoc('fontname', getFont(this[this.selectedIndex].value));">
+                <!-- Fonts -->
+            </select>
+
+            <i class="fa fa-text-height fa-sm"></i>
+            <select id="fontSize" onchange="formatDoc('fontSize', this[this.selectedIndex].value);">
+                <option value="1">Very small</option>
+                <option value="2">A bit small</option>
+                <option value="3">Normal</option>
+                <option value="4">Medium-large</option>
+                <option value="5">Big</option>
+                <option value="6">Very big</option>
+                <option value="7">Maximum</option>
+            </select>
+
+            <i class="fa fa-pencil-square-o fa-sm"></i>
+            <select id="foreColors" onchange="formatDoc('forecolor', this[this.selectedIndex].value);">
+                <!-- Colors -->
+            </select>
+
+            <i class="fa fa-pencil-square fa-sm"></i>
+            <select id="backColors" onchange="formatDoc('backcolor',this[this.selectedIndex].value);">
+                 <!-- Colors -->
+            </select>
+
+            <div class="about"><span class="fa-btn fade" title="About" onclick="location.href = '/about.html'"><i class="fa fa-question-circle"></i></span></div>
+        </div>
+
+        <div style="margin-top: 6px;">
+            <input type="file" class="hidden" id="fileInput" name="files[]"/>
+            <span class="fa-btn fade" title="Open Document" onclick="resetFile(); performClick(document.getElementById('fileInput'))" ><i class="fa fa-file-o"></i></span>
+            <span class="fa-btn fade" title="New Document" onclick="newFile();"><i class="fa fa-file-text"></i></span>
+            <span class="fa-btn fade" title="Save" onclick="saveFile();"><i class="fa fa-floppy-o"></i></span>
+            <span class="fa-btn fade" title="Print" onclick="print();"><i class="fa fa-print"></i></span>
+            <span class="fa-separator">&#11;</span>
+            <span class="fa-btn fade" title="Undo" onclick="formatDoc('undo');"><i class="fa fa-undo"></i></span>
+            <span class="fa-btn fade" title="Redo" onclick="formatDoc('redo');"><i class="fa fa-repeat"></i></span>
+            <span class="fa-separator">&#11;</span>
+            <span class="fa-btn fade" title="Cut" onclick="formatDoc('cut');"><i class="fa fa-cut"></i></span>
+            <span class="fa-btn fade" title="Copy" onclick="formatDoc('copy');"><i class="fa fa-copy"></i></span>
+            <span class="fa-btn fade" title="Paste" onclick="formatDoc('paste');"><i class="fa fa-paste"></i></span>
+            <span class="fa-separator">&#11;</span>
+            <span class="fa-btn fade" title="Bold" onclick="formatDoc('bold');"><i class="fa fa-bold"></i></span>
+            <span class="fa-btn fade" title="Italic" onclick="formatDoc('italic');"><i class="fa fa-italic"></i></span>
+            <span class="fa-btn fade" title="Underline" onclick="formatDoc('underline');"><i class="fa fa-underline"></i></span>
+            <span class="fa-btn fade" title="Strike" onclick="formatDoc('strikeThrough');"><i class="fa fa-strikethrough"></i></span>
+            <span class="fa-separator">&#11;</span>
+            <span class="fa-btn fade" title="Subscript" onclick="formatDoc('subscript');"><i class="fa fa-subscript"></i></span>
+            <span class="fa-btn fade" title="Superscript" onclick="formatDoc('superscript');"><i class="fa fa-superscript"></i></span>
+            <span class="fa-separator">&#11;</span>
+            <span class="fa-btn fade" title="Remove Formatting" onclick="formatDoc('removeFormat');"><i class="fa fa-eraser"></i></span>
+            <span class="fa-separator">&#11;</span> 
+            <span class="fa-btn fade" title="Align Left" onclick="formatDoc('justifyLeft');"><i class="fa fa-align-left"></i></span>
+            <span class="fa-btn fade" title="Align Center" onclick="formatDoc('justifyCenter');"><i class="fa fa-align-center"></i></span>
+            <span class="fa-btn fade" title="Align Right" onclick="formatDoc('justifyRight');"><i class="fa fa-align-right"></i></span>
+            <span class="fa-btn fade" title="Justify" onclick="formatDoc('justifyFull');"><i class="fa fa-align-justify"></i></span>
+            <span class="fa-separator">&#11;</span> 
+            <span class="fa-btn fade" title="Decrease Indent" onclick="formatDoc('outdent');"><i class="fa fa-outdent"></i></span>
+            <span class="fa-btn fade" title="Increase Indent" onclick="formatDoc('indent');"><i class="fa fa-indent"></i></span>
+            <span class="fa-separator">&#11;</span> 
+            <span class="fa-btn fade" title="Numbering" onclick="formatDoc('insertOrderedList');"><i class="fa fa-list-ol"></i></span>
+            <span class="fa-btn fade" title="Bullets" onclick="formatDoc('insertUnorderedList');"><i class="fa fa-list-ul"></i></span>
+            <span class="fa-separator">&#11;</span> 
+            <span class="fa-btn fade" title="Quote" onclick="formatDoc('formatblock', 'blockquote');"><i class="fa fa-quote-left"></i></span>
+            <span class="fa-separator">&#11;</span> 
+            <span class="fa-btn fade" title="Hyperlink" onclick="setHyperlink();"><i class="fa fa-link"></i></span>
+            <span class="fa-btn fade" title="Image" onclick="setImage();"><i class="fa fa-picture-o"></i></span>
+            <span class="fa-separator">&#11;</span> 
+            <span class="fa-btn fade" title="Spell and Grammar Checker" onclick="processText();"><i class="fa fa-check"></i></span>
+            <span class="fa-separator">&#11;</span> 
+            <span class="fa-btn fade" title="View Source" onclick="setDocMode();"><i class="fa fa-code"></i></span>
+        </div>
+    </div> <!-- header -->
+
+    <div id="content" class="page-frame">
+        <input type="hidden" name="documentData"/>
+        <iframe id="document" class="page text-word-wrap border-fade" style="overflow: hidden;"></iframe>
+    </div>
+
+    <div class="footer segoe-ui-12">
+        <div class="fade">PORTUGUÊS (PT-BR)</div>
+    </div>
+</body>
+</html>
