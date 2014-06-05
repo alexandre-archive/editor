@@ -21,7 +21,9 @@ def check(word, lang):
     return dictionaries[lang].suggest(word)
 
 def support_lang(lang):
+    ''' Check if a language is supported. '''
     return dictionaries.has_key(lang)
 
 def add_word(word, lang):
+    ''' Add a word to the current dictionary. '''
     dictionaries[lang].add(word)

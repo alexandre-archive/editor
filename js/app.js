@@ -157,8 +157,29 @@ function setHyperlink() {
     }
 }
 
-function setImage() {
+String.prototype.endsWith = function(suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+};
 
+function setImage() {
+    var url = prompt('Write the URL here','http:\/\/');
+
+    if(url && url != '' && url !='http://') {
+
+        var name = url.toLowerCase();
+
+        if (name.endsWith('.jpg') ||
+            name.endsWith('.jpeg') ||
+            name.endsWith('.png') ||
+            name.endsWith('.gif') ||
+            name.endsWith('.bmp') ||
+            name.endsWith('.tif')) {
+            formatDoc('insertImage', url);
+        } else {
+            alert('Invalid file type.');
+        }
+
+    }
 }
 
 fonts = [

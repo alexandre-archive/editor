@@ -15,68 +15,52 @@ from HTMLParser import HTMLParser
 
 parser = HTMLParser()
 
+
+TAGS = '(?P<tag><(/)?(a|abbr|acronym|address|applet|area|article|aside|audio|'\
+       'b|base|basefont|bdi|bdo|big|blockquote|body|br|button|'\
+       'canvas|caption|center|cite|code|col|colgroup|datalist|dd|'\
+       'del|details|dfn|dialog|dir|div|dl|dt|em|embed|fieldset|'\
+       'figcaption|figure|font|footer|form|frame|frameset|head|'\
+       'header|h[123456]|hr|html|i|iframe|img|input|ins|kbd|keygen|'\
+       'label|legend|li|link|main|map|mark|menu|menuitem|meta|meter|'\
+       'nav|noframes|noscript|object|ol|optgroup|option|output|p|'\
+       'param|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|'\
+       'small|source|span|strike|strong|style|sub|summary|sup|table|'\
+       'tbody|td|textarea|tfoot|th|thead|time|title|tr|track|tt|u|'\
+       'ul|var|video|wbr|!--|--|!DOCTYPE)(\s*[a-zA-Z]+=[\'"].*[\'"]\s*)*>)'
+
 def verify_text(data, lang):
+    ''' Check the words in the given text to find wrond words. '''
+    text = data
 
-    i = -1
-    n = len(data)
+    it_tags = re.finditer(TAGS, text)
+    it_words = re.finditer('(?P<word>([a-zA-Z]+(-[a-zA-Z]+)*))', text, re.UNICODE)
+    #it_phrases = re.finditer('(?P<phrase>((\s*[a-zA-Z]+(-[a-zA-Z]+)*\s*)*))', text, re.UNICODE)
 
-    is_tag = False
-
-    last_char = None
-    word = ''
-
-    start = None
-    end = None
-
-    has_word = lambda: start != None and end != None
-
-    rword = re.compile('[\w-]', re.UNICODE) # a-zA-Z0-9_\-
-    reow = re.compile('[ ,.:;!?]', re.UNICODE)
-    rtag = re.compile('[a-zA-Z/]')
-
+    tags = []
     words = []
 
-    while i <= n:
-        i += 1
+    for i in it_tags:
+        w = i.group('tag')
+        if w:
+            tags.append({'start' : i.start(), 'end' : i.end(), 'word' : w})
 
-        if i > 0 and i == n and end == None:
-            end = i
+    f = lambda x, y: len([t for t in tags if x > t['start'] and y < t['end']])
 
-        # We have a word.
-        if has_word():
-            suggestion = spell_word(word, lang)
-            words.append({'start': start, 'end': end, 'word': word, 'error': suggestion != None, 'suggestions': suggestion})
-            word = ''
-            start = None
-            end = None
+    for i in it_words:
+        w = i.group('word')
+        wu = parser.unescape(w)
+        suggestion = spell_word(wu, lang)
+        s = i.start()
+        e = i.end()
 
-        if i < n:
+        if w and not f(s, e):
+            words.append({'start' : s, 'end' : e, 'word' : w, 'error': suggestion != None, 'suggestions': suggestion})
 
-            c = data[i]
-
-            if i > 0:
-                last_char = c
-
-                if reow.match(c):
-                    # Can start with spaces, so we dont have a start yet.
-                    if start != None and end == None:
-                        end = i
-
-            if not is_tag and c == '<' and (i + 1) < n and rtag.match(data[i + 1]):
-                is_tag = True
-
-                if start:
-                    end = i
-
-            elif is_tag and c == '>':
-                is_tag = False
-
-            elif not is_tag and rword.match(c):
-
-                word += c
-
-                if start == None:
-                    start = i
+    #for i in it_phrases:
+    #    w = i.group('phrase')
+    #    if w:
+    #        print({'start' : i.start(), 'end' : i.end(), 'word' : w})
 
     return words
 
@@ -86,7 +70,7 @@ def process_text():
     jsonData = request.json
 
     text = jsonData['text']
-    text = parser.unescape(text)
+    #text = parser.unescape(text)
     text = text.encode('cp1252')
 
     if not text:
@@ -157,6 +141,7 @@ def addword():
     #add_word(lng, word)
 
 def get_host():
+    ''' Return the host IP. '''
     try:
         import socket
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -167,6 +152,7 @@ def get_host():
         return '127.0.0.1'
 
 def start_server():
+    ''' Start ABC Online server. '''
     SIZE_1_MB = 1048576
     BaseRequest.MEMFILE_MAX = SIZE_1_MB
 

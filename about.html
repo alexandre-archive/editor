@@ -2,43 +2,128 @@
 <head>
     <title>About ABC Online</title>
     <style type="text/css">
-        .segoe-ui-12 {
+        * {
             font-family: 'Segoe UI', Arial, Verdana, sans-serif;
-            font-size: 12px;
         }
+
+        p {
+            font-size: 16px;
+        }
+
+        h1 {
+            font-size: 24px;
+        }
+
         body {
             margin: 0;
             background-color: #EEE;
             padding: 12px;
         }
 
+        html {
+            position: relative;
+            min-height: 100%;
+        }
+
         .icon {
-            padding: 20px;
-            line-height: 100px;
+            cursor: pointer;
+            padding: 10px;
+            text-align: center;
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .left, .right {
+            width: 50%;
+            overflow: hidden;
+
+        }
+
+        .left{
+            float: left;
+        }
+
+        .right{
+            float: left;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 10px;
         }
     </style>
+
+    <script type="text/javascript">
+        function l(url) {
+            location.href = url;
+        }
+    </script>
 </head>
 <body>
-    <div class="segoe-ui-12">
-        <h1>What is used to build this app?</h1>
 
-        <span class="icon"><img src="img/javascript-logo.png" width="150px" height="150px"/></span>
-        <span class="icon"><img src="img/jquery-logo.png" width="166px" height="83px"/></span>
-        <span class="icon"><img src="img/underscore.png" width="350px" height="70px"/></span>
-        <span class="icon"><img src="img/Font-Awesome.png" width="180px" height="50px"/></span>
-        <br><br>
-        <span class="icon"><img src="img/pdfjs.png" width="140px" height="140px"/></span>
-        <span class="icon"><img src="img/hjs.png" width="150px" height="150px"/></span>
+    <a href="https://github.com/alexandrevicenzi/editor"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
 
-        <span class="icon">
-            <img src="img/parallax.png" width="157px" height="26px"/> <span style='font: 36px "aktiv-grotesk-std",Helvetica,Arial;'>jsPDF</span>
-        </span>
+    <div>
+        <h1>O que é o ABC Online?</h1>
 
-        <br><br>
-        <span class="icon"><img src="img/python.png" width="150px" height="150px"/></span>
-        <span class="icon"><img src="img/bottle.png" width="220px" height="77px"/></span>
-        <span class="icon" style='font: 48px "aktiv-grotesk-std",Helvetica,Arial;'>Hunspell</span>
-        <span class="icon"><img src="img/vero-logo.png" width="150px" height="150px"/></span>
+        <p>O ABC Online é um projeto da disciplina de Processo de Software 2.<br>A idéia proposta foi um editor de textos online com verificação gramatical e ortográfica.</p>
+        <p>Este projeto foi baseado no artigo <i>Rich-Text Editing in Mozilla</i> do MDN. Clique <a href="https://developer.mozilla.org/en-US/docs/Rich-Text_Editing_in_Mozilla">aqui</a> para verificar o artigo.</p>
     </div>
+
+    <div>
+        <h1>Quem fez?</h1>
+
+        <p>Este trabalho foi desenvolvido pelo acadêmico Alexandre Vicenzi (vicenzi.alexandre [at] gmail.com).</p>
+
+    </div>
+
+    <div>
+        <h1>O que foi usado para fazê-lo?</h1>
+
+        <div class="left">
+            <h2>Client</h2>
+
+            <span class="icon" onclick="l('https://developer.mozilla.org/en-US/docs/Web/JavaScript')">
+                <img src="img/javascript-logo.png" width="90px" height="90px" title="JavaScript is the programming language of the Web."/>
+            </span>
+            <span class="icon" onclick="l('http://jquery.com/')">
+                <img src="img/jquery-logo.png" width="140px" height="68px" title="jQuery is a fast, small, and feature-rich JavaScript library."/>
+            </span>
+            <span class="icon" onclick="l('http://underscorejs.org/')">
+                <img src="img/underscore.png" width="175px" height="35px" title="Underscore.js is a utility-belt library for JavaScript that provides support for the usual functional suspects (each, map, reduce, filter...) without extending any core JavaScript objects."/>
+            </span>
+            <br>
+            <span class="icon" onclick="l('http://fortawesome.github.io/Font-Awesome/')">
+                <img src="img/font-awesome.jpg" width="200px" height="58px" title="The iconic font and CSS framework."/>
+            </span>
+            <span class="icon" onclick="l('http://mozilla.github.io/pdf.js/')">
+                <img src="img/pdfjs.png" width="90px" height="90px" title="A general-purpose, web standards-based platform for parsing and rendering PDFs."/>
+            </span>
+            <span class="icon" onclick="l('http://parall.ax/products/jspdf')">
+                <span style='font: 36px "aktiv-grotesk-std",Helvetica,Arial;' title="A HTML5 client-side solution for generating PDFs.">jsPDF</span>
+            </span>
+        </div>
+
+        <div class="right">
+            <h2>Server</h2>
+
+            <span class="icon" onclick="l('https://www.python.org/')">
+                <img src="img/python.png" width="90px" height="90px" title="Python is a programming language that lets you work quickly and integrate systems more effectively. "/>
+            </span>
+            <span class="icon" onclick="l('http://bottlepy.org/docs/dev/index.html')">
+                <img src="img/bottle.png" width="110px" height="36px" title="Bottle is a fast, simple and lightweight WSGI micro web-framework for Python."/>
+            </span>
+            <span class="icon" onclick="l('http://hunspell.sourceforge.net/')">
+                <span style='font: 42px "aktiv-grotesk-std",Helvetica,Arial;' title="Hunspell is the spell checker of LibreOffice, OpenOffice.org, Mozilla Firefox 3 &amp; Thunderbird, Google Chrome, and it is also used by proprietary software packages, like Mac OS X, InDesign, memoQ, Opera and SDL Trados.">Hunspell</span>
+            </span>
+            <span class="icon" onclick="l('http://pt-br.libreoffice.org/projetos/projeto-vero-verificador-ortografico/')">
+                <img src="img/vero-logo.png" width="90px" height="90px" title="Verificador Ortografico do LibreOffice."/>
+            </span>
+        </div>
+    </div>
+
+    <footer>
+        <iframe src="//www.facebook.com/plugins/like.php?href=https://github.com/alexandrevicenzi/editor&send=false&layout=button_count&width=120&show_faces=true&font&colorscheme=light&action=like&height=20" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:120px; height:20px;" allowTransparency="true"></iframe>
+    </footer>
 </body>
 </html>
